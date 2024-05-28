@@ -1,4 +1,4 @@
-# financial forest api
+# Financial Forest API
 
 
 [![Python](https://img.shields.io/badge/python-3.12.2-3776AB.svg)](https://www.python.org/downloads/release/python-3122/)
