@@ -1,7 +1,7 @@
 from models.user import User as UserModel, Group as GroupModel
 from schemas.user import User, Group, UserCreate
 from sqlalchemy.orm import joinedload
-
+from utils.bcrypt_pwd import check_password, hash_password
 
 class UserService():
     
@@ -104,5 +104,39 @@ class UserService():
         user = self.db.query(UserModel).filter(UserModel.id == user_id).first()
         # Actualizar el group_id del usuario
         user.group_id = group_id
+        self.db.commit()
+        return user
+
+
+    def auth_user_data(self, email:str, password:str):
+
+        user = self.db.query(
+            UserModel.email, UserModel.password
+        ).filter(UserModel.email == email).first()
+        if not user:
+            return
+
+        password_validated = check_password(password, user.password)
+        if not password_validated:
+            return False
+
+        return user
+    
+
+    def get_user_by_email(self, email:str):
+
+        user = self.db.query(UserModel).first()
+        if not user:
+            return False
+        return user
+    
+
+    def update_password(self, email:str, password:str):
+
+        user = self.db.query(UserModel).filter(UserModel.email == email).first()
+        if not user:
+            return False
+        
+        user.password = hash_password(password)
         self.db.commit()
         return user

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends , Path
+from fastapi import APIRouter, Depends , Path, status
 from utils.jwt_manager import create_token
 from fastapi.responses import JSONResponse
 from schemas.user import User, LoginRequest, Group, UserCreate
@@ -12,10 +12,28 @@ user_router = APIRouter()
 
 @user_router.post('/login', tags=['auth'])
 def login(user: LoginRequest):
-    if user.email == "admin@gmail.com" and user.password == "admin":
-        token: str = create_token(user.model_dump())
-        return JSONResponse(status_code=200, content=token)
+    db = Session()
+    result = UserService(db).auth_user_data(user.email, user.password)
+    if not result:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, 
+            content={'message': "No Autorizado"})
+
+    token: str = create_token(user.model_dump())
+    return JSONResponse(status_code=200, content=token)
+
+
+@user_router.post('/update_password', tags=['auth'])
+def update_password(user: LoginRequest):
+    db = Session()
+    result = UserService(db).get_user_by_email(user.email)
+    if not result:
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            content={'message': "Error al realizar la solicitud"})
+
     
+    UserService(db).update_password(user.email, user.password)
+    return JSONResponse(status_code=status.HTTP_200_OK, content={'message': "ok"})
+
 
 @user_router.get('/users', tags=['users'], response_model=List[User], 
     status_code=200, dependencies=[Depends(JWTBearer())])
