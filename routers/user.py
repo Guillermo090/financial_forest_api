@@ -40,7 +40,7 @@ def update_password(user: LoginRequest):
 def get_users() -> List[User]:
     db = Session()
     result = UserService(db).get_users()
-    return JSONResponse(status_code=200, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 @user_router.get('/users/{id}', tags=['users'], response_model=User, 
@@ -49,9 +49,9 @@ def get_user(id: int = Path(ge=1, le=2000)) -> User:
     db = Session()
     result = UserService(db).get_user(id)
     if not result:
-        return JSONResponse(status_code=404, 
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
             content={'message': "No encontrado"})
-    return JSONResponse(status_code=200, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 @user_router.post('/users', tags=['users'], response_model=dict, 
@@ -59,7 +59,7 @@ def get_user(id: int = Path(ge=1, le=2000)) -> User:
 def create_user(user: UserCreate) -> dict:
     db = Session()
     UserService(db).create_user(user)
-    return JSONResponse(status_code=201, 
+    return JSONResponse(status_code=status.HTTP_201_CREATED, 
         content={"message": "Se ha registrado el usuario"})
 
 
@@ -69,11 +69,11 @@ def update_user(id: int, user: User)-> dict:
     db = Session()
     result = UserService(db).get_user(id)
     if not result:
-        return JSONResponse(status_code=404, 
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
             content={'message': "No encontrado"})
     
     UserService(db).update_user(id, user)
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=status.HTTP_200_OK, 
         content={"message": "Se ha modificado el usuario"})
 
 
@@ -83,10 +83,10 @@ def delete_user(id: int)-> dict:
     db = Session()
     result: User = UserService(db).get_user(id)
     if not result:
-        return JSONResponse(status_code=404, content={"message": "No se encontró"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "No se encontró"})
     
     UserService(db).delete_user(id)
-    return JSONResponse(status_code=200, 
+    return JSONResponse(status_code=status.HTTP_200_OK, 
         content={"message": "Se ha eliminado el usuario"})
 
 
@@ -94,7 +94,7 @@ def delete_user(id: int)-> dict:
 def get_groups() -> List[Group]:
     db = Session()
     result = UserService(db).get_groups()
-    return JSONResponse(status_code=200, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 @user_router.get('/groups/{id}', tags=['groups'], response_model=Group)
@@ -102,15 +102,15 @@ def get_group(id: int = Path(ge=1, le=2000)) -> User:
     db = Session()
     result = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=404, content={'message': "No encontrado"})
-    return JSONResponse(status_code=200, content=jsonable_encoder(result))
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={'message': "No encontrado"})
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
 
 
 @user_router.post('/groups', tags=['groups'], response_model=dict, status_code=201)
 def create_group(group: Group) -> dict:
     db = Session()
     UserService(db).create_group(group)
-    return JSONResponse(status_code=201, content={"message": "Se ha registrado el grupo"})
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Se ha registrado el grupo"})
 
 
 @user_router.put('/groups/{id}', tags=['groups'], response_model=dict, status_code=200)
@@ -118,10 +118,10 @@ def update_group(id: int, group: Group)-> dict:
     db = Session()
     result = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=404, content={'message': "No encontrado"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={'message': "No encontrado"})
     
     UserService(db).update_group(id, group)
-    return JSONResponse(status_code=200, content={"message": "Se ha modificado el grupo"})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Se ha modificado el grupo"})
 
 
 @user_router.delete('/groups/{id}', tags=['groups'], response_model=dict, status_code=200)
@@ -129,7 +129,7 @@ def delete_group(id: int)-> dict:
     db = Session()
     result: User = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=404, content={"message": "No se encontró"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "No se encontró"})
     
     UserService(db).delete_group(id)
-    return JSONResponse(status_code=200, content={"message": "Se ha eliminado el grupo"})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Se ha eliminado el grupo"})
