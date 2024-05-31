@@ -36,5 +36,5 @@ python -m venv .venv
 pip install fastapi
 
 # iniciar servidor de desarrollo
-reflex init
+uvicorn main:app --reload
 ```
