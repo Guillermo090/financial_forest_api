@@ -10,8 +10,9 @@ from fastapi.encoders import jsonable_encoder
 
 user_router = APIRouter()
 
-@user_router.post('/login', tags=['auth'])
-def login(user: LoginRequest):
+@user_router.post('/login', tags=['auth'], 
+    status_code=status.HTTP_200_OK)
+def login(user: LoginRequest) -> str | dict:
     db = Session()
     result = UserService(db).auth_user_data(user.email, user.password)
     if not result:
@@ -19,11 +20,12 @@ def login(user: LoginRequest):
             content={'message': "No Autorizado"})
 
     token: str = create_token(user.model_dump())
-    return JSONResponse(status_code=200, content=token)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=token)
 
 
-@user_router.post('/update_password', tags=['auth'])
-def update_password(user: LoginRequest):
+@user_router.post('/update_password', tags=['auth'], response_model=dict, 
+    status_code=status.HTTP_200_OK)
+def update_password(user: LoginRequest) -> dict:
     db = Session()
     result = UserService(db).get_user_by_email(user.email)
     if not result:
@@ -32,15 +34,17 @@ def update_password(user: LoginRequest):
 
     
     UserService(db).update_password(user.email, user.password)
-    return JSONResponse(status_code=status.HTTP_200_OK, content={'message': "ok"})
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content={'message': "ok"})
 
 
 @user_router.get('/users', tags=['users'], response_model=List[User], 
-    status_code=200, dependencies=[Depends(JWTBearer())])
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_users() -> List[User]:
     db = Session()
     result = UserService(db).get_users()
-    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content=jsonable_encoder(result))
 
 
 @user_router.get('/users/{id}', tags=['users'], response_model=User, 
@@ -51,11 +55,12 @@ def get_user(id: int = Path(ge=1, le=2000)) -> User:
     if not result:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
             content={'message': "No encontrado"})
-    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content=jsonable_encoder(result))
 
 
 @user_router.post('/users', tags=['users'], response_model=dict, 
-    status_code=201, dependencies=[Depends(JWTBearer())])
+    status_code=status.HTTP_201_CREATED, dependencies=[Depends(JWTBearer())])
 def create_user(user: UserCreate) -> dict:
     db = Session()
     UserService(db).create_user(user)
@@ -64,7 +69,7 @@ def create_user(user: UserCreate) -> dict:
 
 
 @user_router.put('/users/{id}', tags=['users'], response_model=dict, 
-    status_code=200, dependencies=[Depends(JWTBearer())])
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def update_user(id: int, user: User)-> dict:
     db = Session()
     result = UserService(db).get_user(id)
@@ -78,58 +83,72 @@ def update_user(id: int, user: User)-> dict:
 
 
 @user_router.delete('/users/{id}', tags=['users'], response_model=dict, 
-    status_code=200, dependencies=[Depends(JWTBearer())])
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def delete_user(id: int)-> dict:
     db = Session()
     result: User = UserService(db).get_user(id)
     if not result:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "No se encontró"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
+            content={"message": "No se encontró"})
     
     UserService(db).delete_user(id)
     return JSONResponse(status_code=status.HTTP_200_OK, 
         content={"message": "Se ha eliminado el usuario"})
 
 
-@user_router.get('/groups', tags=['groups'], response_model=List[Group], status_code=200, dependencies=[Depends(JWTBearer())])
+@user_router.get('/groups', tags=['groups'], response_model=List[Group], 
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_groups() -> List[Group]:
     db = Session()
     result = UserService(db).get_groups()
-    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content=jsonable_encoder(result))
 
 
-@user_router.get('/groups/{id}', tags=['groups'], response_model=Group)
+@user_router.get('/groups/{id}', tags=['groups'], response_model=Group, 
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def get_group(id: int = Path(ge=1, le=2000)) -> User:
     db = Session()
     result = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={'message': "No encontrado"})
-    return JSONResponse(status_code=status.HTTP_200_OK, content=jsonable_encoder(result))
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
+            content={'message': "No encontrado"})
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content=jsonable_encoder(result))
 
 
-@user_router.post('/groups', tags=['groups'], response_model=dict, status_code=201)
+@user_router.post('/groups', tags=['groups'], response_model=dict, 
+    status_code=status.HTTP_201_CREATED, dependencies=[Depends(JWTBearer())])
 def create_group(group: Group) -> dict:
     db = Session()
     UserService(db).create_group(group)
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Se ha registrado el grupo"})
+    return JSONResponse(status_code=status.HTTP_201_CREATED, 
+        content={"message": "Se ha registrado el grupo"})
 
 
-@user_router.put('/groups/{id}', tags=['groups'], response_model=dict, status_code=200)
+@user_router.put('/groups/{id}', tags=['groups'], response_model=dict, 
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def update_group(id: int, group: Group)-> dict:
     db = Session()
     result = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={'message': "No encontrado"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
+            content={'message': "No encontrado"})
     
     UserService(db).update_group(id, group)
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Se ha modificado el grupo"})
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content={"message": "Se ha modificado el grupo"})
 
 
-@user_router.delete('/groups/{id}', tags=['groups'], response_model=dict, status_code=200)
+@user_router.delete('/groups/{id}', tags=['groups'], response_model=dict, 
+    status_code=status.HTTP_200_OK, dependencies=[Depends(JWTBearer())])
 def delete_group(id: int)-> dict:
     db = Session()
     result: User = UserService(db).get_group(id)
     if not result:
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"message": "No se encontró"})
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
+            content={"message": "No se encontró"})
     
     UserService(db).delete_group(id)
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Se ha eliminado el grupo"})
+    return JSONResponse(status_code=status.HTTP_200_OK, 
+        content={"message": "Se ha eliminado el grupo"})
